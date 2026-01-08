@@ -1,20 +1,22 @@
 import React, { useState } from "react";
 import useAuthUser from "../hooks/useAuthUser";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
   CameraIcon,
   LoaderIcon,
   MapPinIcon,
   ShipWheelIcon,
+  ShuffleIcon,
 } from "lucide-react";
 import { completeOnboarding } from "../lib/api";
-import { ShuffleIcon } from "lucide-react";
 import { LANGUAGES } from "../constants";
+import { useNavigate } from "react-router-dom";
 
 const OnboardingPage = () => {
   const { authUser } = useAuthUser();
-  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
   const [formState, setFormState] = useState({
     fullName: authUser?.fullName || "",
     bio: authUser?.bio || "",
@@ -27,15 +29,13 @@ const OnboardingPage = () => {
   const { mutate: onboardingMutation, isPending } = useMutation({
     mutationFn: completeOnboarding,
     onSuccess: () => {
-      toast.success("Profile onboarded succesfully");
+      toast.success("Profile onboarded successfully");
+      navigate("/"); // ✅ Redirect added here
     },
-    onError: (error) =>{
-      toast.error(error.response.data.message);
-      
-    }
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Something went wrong");
+    },
   });
-
-  
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -56,10 +56,11 @@ const OnboardingPage = () => {
           <h1 className="text-2xl sm:text-3xl font-bold text-center mb-6">
             Complete Your Profile
           </h1>
+
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* PROFILE PIC CONTAINER */}
+
+            {/* PROFILE PIC */}
             <div className="flex flex-col items-center justify-center space-y-4">
-              {/* Image Preview */}
               <div className="size-32 rounded-full bg-base-300 overflow-hidden">
                 {formState.profilePic ? (
                   <img
@@ -73,7 +74,7 @@ const OnboardingPage = () => {
                   </div>
                 )}
               </div>
-              {/* Generate random avatar button */}
+
               <div className="flex items-center gap-2">
                 <button
                   type="button"
@@ -85,14 +86,14 @@ const OnboardingPage = () => {
                 </button>
               </div>
             </div>
-            {/* Full name */}
+
+            {/* FULL NAME */}
             <div className="form-control">
               <label className="label">
                 <span className="label-text">Full Name</span>
               </label>
               <input
                 type="text"
-                name="fullName"
                 value={formState.fullName}
                 placeholder="Enter your full name"
                 className="input input-bordered w-full"
@@ -102,13 +103,13 @@ const OnboardingPage = () => {
                 required
               />
             </div>
+
             {/* BIO */}
             <div className="form-control">
               <label className="label">
                 <span className="label-text">Bio</span>
               </label>
               <textarea
-                name="bio"
                 placeholder="Tell others about yourself and your language learning goals"
                 className="textarea textarea-bordered h-24"
                 value={formState.bio}
@@ -118,15 +119,15 @@ const OnboardingPage = () => {
                 required
               />
             </div>
-            {/* Languages */}
+
+            {/* LANGUAGES */}
             <div className="grid grid-col-1 md:grid-cols-2 gap-4">
-              {/* native language */}
+              {/* Native */}
               <div className="form-control">
                 <label className="label">
                   <span className="label-text">Native Language</span>
                 </label>
                 <select
-                  name="nativeLanguage"
                   value={formState.nativeLanguage}
                   onChange={(e) =>
                     setFormState({
@@ -144,13 +145,13 @@ const OnboardingPage = () => {
                   ))}
                 </select>
               </div>
-              {/* learningLanguage */}
+
+              {/* Learning */}
               <div className="form-control">
                 <label className="label">
                   <span className="label-text">Learning Language</span>
                 </label>
                 <select
-                  name="learningLanguage"
                   value={formState.learningLanguage}
                   onChange={(e) =>
                     setFormState({
@@ -162,36 +163,36 @@ const OnboardingPage = () => {
                 >
                   <option value="">Select language you're learning</option>
                   {LANGUAGES.map((lang) => (
-                    <option key={`native-${lang}`} value={lang.toLowerCase()}>
+                    <option key={`learn-${lang}`} value={lang.toLowerCase()}>
                       {lang}
                     </option>
                   ))}
                 </select>
               </div>
             </div>
-            {/* Location */}
+
+            {/* LOCATION */}
             <div className="form-control">
               <label className="label">
                 <span className="label-text">Location</span>
               </label>
               <div className="relative">
                 <MapPinIcon
-                  className="absolute top-1/2 transform -translate-y-1/2 left-3 size-5
-                  text-base-content opacity-70"
+                  className="absolute top-1/2 transform -translate-y-1/2 left-3 size-5 text-base-content opacity-70"
                 />
                 <input
                   type="text"
-                  name="location"
                   value={formState.location}
                   onChange={(e) =>
                     setFormState({ ...formState, location: e.target.value })
                   }
-                  className="input input-boarderd w-full pl-10"
+                  className="input input-bordered w-full pl-10"
                   placeholder="City, Country"
                 />
               </div>
             </div>
-            {/* submit button */}
+
+            {/* SUBMIT */}
             <button
               className="btn btn-primary w-full"
               disabled={isPending}
